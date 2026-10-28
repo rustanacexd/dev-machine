@@ -1,0 +1,11 @@
+[tools]
+bun = "1.3.10"
+go = "1.26.2"
+java = "openjdk-25.0.2"
+node = "22.22.0"
+
+[settings]
+idiomatic_version_file_enable_tools = ["node"]
+
+[env]
+GOBIN = "{{env.HOME}}/go/bin"
