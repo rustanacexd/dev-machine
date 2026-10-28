@@ -10,5 +10,6 @@
   "defuddle": "0.15.0",
   "firebase-tools": "14.4.0",
   "neovim": "4.10.1",
-  "pure-prompt": "1.23.0"
+  "pure-prompt": "1.23.0",
+  "@playwright/test": "1.64.1"
 }

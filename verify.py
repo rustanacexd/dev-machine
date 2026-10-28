@@ -47,8 +47,8 @@ for name, result in results.items():
     text = result['stdout']
     selected = {line.split('=', 1)[0]: line.split('=', 1)[1]
                 for line in text.splitlines() if '=' in line}
-    managed = (selected.get('python', '').startswith(home + '/.local/bin/')
-               and selected.get('python3', '').startswith(home + '/.local/bin/')
+    managed = (selected.get('python', '').startswith(home + '/.venvs/default/bin/')
+               and selected.get('python3', '').startswith(home + '/.venvs/default/bin/')
                and '/.local/share/mise/' in selected.get('node', '')
                and '/.local/share/mise/' in selected.get('go', '')
                and '/.local/share/mise/' in selected.get('java', '')
@@ -67,6 +67,19 @@ for name, result in results.items():
     print(json.dumps({'shell': name, 'managed': managed, 'selected': selected}))
 
 root = Path(__file__).resolve().parent
+library_check = subprocess.run([home + '/.venvs/default/bin/python', '-c',
+                               'import numpy,pandas,pyarrow,polars,bs4,docx,pypdf; from playwright.sync_api import sync_playwright'],
+                              capture_output=True, text=True, timeout=60)
+if args.expect_managed and library_check.returncode:
+    failed.append('Shared Python libraries')
+print(json.dumps({'shared_python_libraries': library_check.returncode == 0}))
+
+playwright_check = subprocess.run([home + '/.local/share/dev-machine/npm/bin/playwright', '--version'],
+                                 capture_output=True, text=True, timeout=30)
+if args.expect_managed and playwright_check.returncode:
+    failed.append('Node Playwright command')
+print(json.dumps({'node_playwright': playwright_check.returncode == 0}))
+
 python_tools = json.loads((root / 'python-tools.json').read_text())
 for name in python_tools['tools']:
     interpreter = Path(home) / '.local/share/uv/tools' / name / 'bin/python'

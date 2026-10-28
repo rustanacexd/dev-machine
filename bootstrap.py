@@ -27,6 +27,20 @@ if args.install:
     subprocess.run(['/opt/homebrew/bin/mise', 'install'], cwd=root, check=True)
     subprocess.run(['/opt/homebrew/bin/uv', 'python', 'install', *python['installed']], check=True)
     subprocess.run(['/opt/homebrew/bin/uv', 'python', 'install', python['default'], '--default'], check=True)
+    shared_environment = home / '.venvs/default'
+    if not (shared_environment / 'pyvenv.cfg').exists():
+        subprocess.run(['/opt/homebrew/bin/uv', 'venv', '--seed', str(shared_environment),
+                        '--python', python['default']], check=True)
+    subprocess.run(['/opt/homebrew/bin/uv', 'pip', 'install', '--python',
+                    str(shared_environment / 'bin/python'), '--requirement',
+                    str(root / 'python-libraries.txt')], check=True)
+    for relative in json.loads((root / 'local-python-projects.json').read_text()):
+        project = home / relative
+        if project.exists():
+            subprocess.run(['/opt/homebrew/bin/uv', 'pip', 'install', '--no-deps', '--python',
+                            str(shared_environment / 'bin/python'), str(project)], check=True)
+        else:
+            print('Local Python project is not present; skipped: ' + relative)
     for name, tool in python['tools'].items():
         command = ['/opt/homebrew/bin/uv', 'tool', 'install', '--managed-python', '--python', tool['python'],
                    '--constraints', str(root / 'constraints' / (name + '.txt')),
@@ -38,6 +52,9 @@ if args.install:
     subprocess.run(['/opt/homebrew/bin/mise', 'exec', '--', 'npm', 'install', '--global', '--prefix',
                     str(home / '.local/share/dev-machine/npm'),
                     *[name + '@' + version for name, version in packages.items()]], cwd=root, check=True)
+    subprocess.run(['/opt/homebrew/bin/mise', 'exec', '--',
+                    str(home / '.local/share/dev-machine/npm/bin/playwright'),
+                    'install', 'chromium'], cwd=root, check=True)
     go_tools = json.loads((root / 'go-tools.json').read_text())
     for package in go_tools:
         subprocess.run(['/opt/homebrew/bin/mise', 'exec', '--', 'go', 'install', package],

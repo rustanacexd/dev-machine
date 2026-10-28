@@ -1,5 +1,5 @@
 _dev_path=
-_dev_candidates="$HOME/.local/bin:$HOME/.local/share/mise/shims:$HOME/.local/share/dev-machine/npm/bin:$HOME/Library/pnpm/bin:$HOME/.cargo/bin:$HOME/go/bin:$HOME/.orbstack/bin:$HOME/.codeium/windsurf/bin:/opt/homebrew/opt/openssl@3/bin:/opt/homebrew/opt/ffmpeg-full/bin:/opt/homebrew/opt/imagemagick-full/bin:/opt/homebrew/share/google-cloud-sdk/bin:/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+_dev_candidates="$HOME/.local/share/dev-machine/npm/bin:$HOME/.venvs/default/bin:$HOME/.local/bin:$HOME/.local/share/mise/shims:$HOME/Library/pnpm/bin:$HOME/.cargo/bin:$HOME/go/bin:$HOME/.orbstack/bin:$HOME/.codeium/windsurf/bin:/opt/homebrew/opt/openssl@3/bin:/opt/homebrew/opt/ffmpeg-full/bin:/opt/homebrew/opt/imagemagick-full/bin:/opt/homebrew/share/google-cloud-sdk/bin:/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
 if [ -n "${VIRTUAL_ENV:-}" ] && [ -d "$VIRTUAL_ENV/bin" ]; then
     _dev_candidates="$VIRTUAL_ENV/bin:$_dev_candidates"
 fi

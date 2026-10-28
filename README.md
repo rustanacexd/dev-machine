@@ -14,9 +14,11 @@ This repository owns the shell setup and tool manifests for this Mac. It keeps P
 
 Python 3.9, 3.10, 3.12, and 3.13 remain available through uv for existing environments and tools. A directory with its own mise configuration can select another language version. An explicitly activated virtual environment keeps precedence over the machine default.
 
+The default `python`, `python3`, and `pip` use the shared environment at `~/.venvs/default`, built with uv Python 3.14.9. `python-libraries.txt` records the libraries restored from the earlier global Python installations. The Node `playwright` command takes precedence over the Python command with the same name. Use `python -m playwright` for Python Playwright. Both are installed with version 1.64.1. The separate `playwright-cli` command remains available.
+
 `shell/env.sh` sets the shared paths for zsh, Bash, and future GUI launches. `shell/interactive.zsh` retains the existing prompt, aliases, and plugins. The startup files in the home directory are short pointers into this repository. `mise.toml`, `uv.toml`, `python-version`, and `npmrc` are linked into their tools' normal configuration locations.
 
-`Brewfile` records Homebrew packages and Cargo-installed utilities. `python-tools.json` records Python CLI versions and interpreters, with full package constraints under `constraints/`. `npm-packages.json` records the twelve migrated npm packages. npm's global prefix is `~/.local/share/dev-machine/npm`, separate from Node installations. `go-tools.json` records the existing Go utility under `~/go/bin`. `shell-repositories.json` records the shell framework and plugins for a fresh restore.
+`Brewfile` records Homebrew packages and Cargo-installed utilities. `python-tools.json` records Python CLI versions and interpreters, with full package constraints under `constraints/`. `npm-packages.json` records the global npm packages, including the complete Playwright test package. npm's global prefix is `~/.local/share/dev-machine/npm`, separate from Node installations. `go-tools.json` records the existing Go utility under `~/go/bin`. `shell-repositories.json` records the shell framework and plugins for a fresh restore. `local-python-projects.json` records optional local application checkouts installed into the shared Python environment.
 
 Run the ownership check with:
 
