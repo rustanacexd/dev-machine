@@ -18,6 +18,8 @@ The default `python`, `python3` and `pip` use the shared environment at `~/.venv
 
 ## Set up a new Mac
 
+To have an agent do it, point it at this repository and ask it to set up this Mac. `AGENTS.md` gives it the same steps as below and tells it when to stop for your password, the secret values, and the GUI steps.
+
 The setup assumes Apple Silicon, with Homebrew in `/opt/homebrew`.
 
 1. Install Homebrew from https://brew.sh.
@@ -33,11 +35,11 @@ The setup assumes Apple Silicon, with Homebrew in `/opt/homebrew`.
    ~/.config/dev-machine/bootstrap.sh --install
    ```
 
-   This installs uv, rustup, Claude Code and Zed, the Homebrew and Cargo packages, the mise runtimes, the Python versions, tools and shared libraries, the npm and Go tools, and the oh-my-zsh plugins. It then links the configs and loads the LaunchAgents.
+   It asks for your password once, for the Karabiner-Elements installer, and takes about 15 to 30 minutes. If a step fails, fix it and rerun the command; it skips what is already installed. This installs uv, rustup, Claude Code and Zed, the Homebrew and Cargo packages, the mise runtimes, the Python versions, tools and shared libraries, the npm and Go tools, and the oh-my-zsh plugins. It then links the configs and loads the LaunchAgents.
 4. Recreate the two secret files, which are not in Git:
    - `~/.config/dev-machine/private/env.sh`, mode 600, exporting `EXA_API_KEY`.
    - `~/.zshrc.secrets`, exporting `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `GEMINI_API_KEY` and `GOOGLE_GENERATIVE_AI_API_KEY`.
-5. Open OrbStack once and finish its setup. That creates `~/.orbstack/bin`, which makes `docker` use OrbStack.
+5. Open OrbStack once and finish its setup. That creates `~/.orbstack/bin`, which makes `docker` use OrbStack. Open Karabiner-Elements and allow the permissions macOS asks for.
 6. Log out and back in, so GUI apps get the PATH and secrets, then check:
 
    ```sh
