@@ -1,3 +1,10 @@
 private/
+*.secrets
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*credentials*.json
 *.log
 .DS_Store
