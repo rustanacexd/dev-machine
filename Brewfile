@@ -113,8 +113,6 @@ brew "pkgconf"
 brew "pnpm"
 # PDF rendering library (based on the xpdf-3.0 code base)
 brew "poppler"
-# Pretty, minimal and fast ZSH prompt
-brew "pure"
 # Static type checker for Python
 brew "pyright"
 # Interpreted, interactive, object-oriented programming language
@@ -143,6 +141,10 @@ brew "uv"
 brew "vite"
 # Internet file retriever
 brew "wget"
+# CLI for Git worktree management, designed for parallel AI agent workflows
+brew "worktrunk"
+# Feature-rich command-line audio/video downloader
+brew "yt-dlp"
 # Process YAML, JSON, XML, CSV and properties documents from the CLI
 brew "yq"
 # Shell extension to navigate your filesystem faster

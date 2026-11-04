@@ -1,16 +1,11 @@
-# ------------------------------------------------------------------------------
-# ~/.zshrc
-# Built-in README for your shell setup.
+# Interactive zsh, loaded by ~/.zshrc. PATH comes from shell/env.sh.
 #
 # Load order:
-# 1) Locale / Environment variables
-# 2) PATH assembly (deduped)
-# 3) Oh My Zsh + plugin loading
-# 4) Tool initialization (fzf/terraform/gcloud/bun/starship/direnv)
-# 5) Aliases
-# 6) Custom functions
-# 7) Local secrets file (private, machine-specific)
-# ------------------------------------------------------------------------------
+# 1) Locale and environment variables
+# 2) Completion, oh-my-zsh libraries and plugins
+# 3) Tool hooks (fzf, gcloud, starship, direnv)
+# 4) Aliases
+# 5) Local secrets file (private, machine-specific)
 
 # 1) Locale / Environment
 # Prevent locale warnings and keep UTF-8 behavior consistent across tools.
@@ -24,7 +19,6 @@ export ZSH="$HOME/.oh-my-zsh"
 # General tool behavior flags.
 export ENABLE_BACKGROUND_TASKS=1
 export USE_GKE_GCLOUD_AUTH_PLUGIN=True
-export DISABLE_PURE=false
 
 export FORCE_AUTOUPDATE_PLUGINS=true
 
@@ -32,7 +26,7 @@ export FORCE_AUTOUPDATE_PLUGINS=true
 export EDITOR="zed --wait"
 export VISUAL="zed --wait"
 
-# 3) Completion + oh-my-zsh libraries and plugins
+# 2) Completion + oh-my-zsh libraries and plugins
 # Loaded directly instead of through oh-my-zsh.sh, which spent ~40 ms on
 # update checks, compaudit, and zcompdump bookkeeping. shell-repositories.json
 # pins the oh-my-zsh revision, so its updater has nothing to do.
@@ -67,7 +61,7 @@ for _omz_file in "$ZSH_CUSTOM"/*.zsh(N); do source "$_omz_file"; done
 unset _omz_file
 [[ -z "$LS_COLORS" ]] || zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 
-# 4) Tool Init
+# 3) Tool Init
 # Sources a tool's generated init script from a cache keyed by the resolved
 # binary path, so an upgrade (a new Cellar path) regenerates it.
 _cached_init() {
@@ -112,9 +106,13 @@ fi
 if (( $+commands[direnv] )); then
   _cached_init direnv hook zsh
 fi
+
+if (( $+commands[bun] )); then
+  _cached_init bun completions
+fi
 unfunction _cached_init
 
-# 5) Aliases
+# 4) Aliases
 # Basic shell convenience aliases.
 alias pg="ping google.com"
 alias c='clear'
@@ -123,24 +121,13 @@ alias fsize='du -hs'
 
 # Tool launch shortcuts.
 alias lg='lazygit'
-alias lzd='lazydocker'
 alias htop="sudo /Applications/NeoHtop.app/Contents/MacOS/NeoHtop"
 alias claude="claude --dangerously-skip-permissions"
 
 # Sets ADC path in current shell for GCP SDK/client usage.
-alias export_gcs_creds='export GOOGLE_APPLICATION_CREDENTIALS="/Users/rustancorpuz/.config/gcloud/application_default_credentials.json"'
+alias export_gcs_creds='export GOOGLE_APPLICATION_CREDENTIALS="$HOME/.config/gcloud/application_default_credentials.json"'
 
-# 6) Functions
-
-
-# 7) Local Secrets (not committed)
+# 5) Local Secrets (not committed)
 [[ -f "$HOME/.zshrc.secrets" ]] && source "$HOME/.zshrc.secrets"
-
-# bun completions
-[ -s "/Users/rustancorpuz/.bun/_bun" ] && source "/Users/rustancorpuz/.bun/_bun"
-
-# browser-use CLI: do not prepend ~/.browser-use-env to PATH globally — it hijacks
-# `python` for every shell. Use `uv run` / project venvs for Python, or activate
-# that env only when working on browser-use.
 
 

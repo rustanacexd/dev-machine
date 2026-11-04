@@ -5,11 +5,12 @@
   "@juicesharp/rpiv-ask-user-question": "1.3.1",
   "@juicesharp/rpiv-btw": "1.3.1",
   "@playwright/cli": "0.1.22",
+  "agent-browser": "0.41.1",
+  "agent-desktop": "1.1.0",
   "carbonyl": "0.0.2-next.bacf3db",
   "context-mode": "1.0.111",
   "defuddle": "0.15.0",
   "firebase-tools": "14.4.0",
   "neovim": "4.10.1",
-  "pure-prompt": "1.23.0",
   "@playwright/test": "1.64.1"
 }

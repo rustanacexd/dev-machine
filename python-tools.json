@@ -8,6 +8,10 @@
     "3.14.9"
   ],
   "tools": {
+    "ccswap": {
+      "version": "0.44.0",
+      "python": "3.14.9"
+    },
     "claude-swap": {
       "version": "0.26.0",
       "python": "3.12.13"

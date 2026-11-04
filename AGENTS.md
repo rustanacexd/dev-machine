@@ -1,6 +1,24 @@
 # Agent guide
 
-This repository is the shell and toolchain configuration for this Mac. It must live at `~/.config/dev-machine`. Every shell on the machine loads it, so a mistake here breaks every terminal, script and agent. Read this file before you edit anything.
+This repository is the portable configuration for this Mac. Its job is to rebuild the same setup on a new Mac with one command, so anything installed or configured by hand that is not recorded here is lost on the next machine. It must live at `~/.config/dev-machine`. Every shell on the machine loads it, so a mistake here breaks every terminal, script and agent. Read this file before you edit anything.
+
+## Keep it reproducible
+
+When you install a tool or change a setting, record it in the matching manifest in the same change.
+
+| Installed with | Record it in |
+| --- | --- |
+| `brew install`, `brew install --cask`, `cargo install` | `Brewfile` |
+| `npm install -g` | `npm-packages.json`, with the exact version |
+| `uv tool install` | `python-tools.json` and `constraints/<tool>.txt` (`uv pip freeze --python ~/.local/share/uv/tools/<tool>/bin/python`) |
+| `uv pip install` into `~/.venvs/default` | `python-libraries.txt` |
+| `go install` | `go-tools.json`, with the version |
+| a vendor `curl ... \| sh` installer | the `installers` table in `bootstrap.py`, keyed by the path it creates |
+| a language runtime | `mise.toml` |
+| an oh-my-zsh plugin | `shell-repositories.json`, with the commit |
+| a LaunchAgent | a plist in `launchd/`; `bootstrap.py` installs every file there |
+
+Use `$HOME`, never `/Users/<name>`, in anything committed. Check for drift with `brew bundle cleanup --file=Brewfile`, which lists installed packages the Brewfile lacks without removing them unless you pass `--force`.
 
 ## Where things are
 
@@ -28,15 +46,18 @@ The files in the home directory are one-line pointers. Edit the files they load 
   | `vimrc` | `~/.vimrc` |
 
   To track another config, add it to the `links` table in `bootstrap.py` and run `./bootstrap.sh`.
-- `launchd/com.dev-machine.gui-env.plist` sets `EXA_API_KEY` for GUI apps at login.
+- `launchd/com.dev-machine.gui-env.plist` gives GUI apps `PATH`, `JAVA_HOME`, `BASH_ENV` and `EXA_API_KEY` from `env.sh` at every login.
+- `launchd/com.dev-machine.right-command-to-control.plist` remaps the right Command key to Control at login.
 - The manifests (`Brewfile`, `python-tools.json`, `constraints/`, `npm-packages.json`, `go-tools.json`, `python-libraries.txt`, `local-python-projects.json`, `shell-repositories.json`) feed `bootstrap.sh --install`.
 
 ## Secrets
 
 Never commit a secret, and never print one in output.
 
-- `private/env.sh` holds `EXA_API_KEY`. It is git-ignored and has mode 600.
-- `~/.zshrc.secrets` holds the AWS and Gemini keys. It is outside the repository, and `interactive.zsh` sources it.
+- `private/env.sh` exports `EXA_API_KEY`. It is git-ignored and has mode 600. `env.sh` sources it, so every shell and GUI app gets it.
+- `~/.zshrc.secrets` exports `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `GEMINI_API_KEY` and `GOOGLE_GENERATIVE_AI_API_KEY`. It is outside the repository, and `interactive.zsh` sources it.
+
+On a new Mac, both files must be recreated by hand.
 
 Put any new credential in one of those two files. Keep `.gitignore` covering them. The `.githooks/pre-commit` hook runs `trufflehog` on the staged files and blocks a commit that looks like it contains a credential. `bootstrap.py` turns the hook on with `core.hooksPath`. Don't bypass it with `--no-verify`.
 
@@ -45,7 +66,7 @@ Put any new credential in one of those two files. Keep `.gitignore` covering the
 A login shell starts in about 45 ms. Keep it that way.
 
 - Don't add `eval "$(tool init zsh)"`. Use `_cached_init tool init zsh` in `interactive.zsh`. It caches the output in `~/.cache/zsh` under the binary's resolved path, so it regenerates when the tool is upgraded. Put the call above the `unfunction _cached_init` line.
-- Don't add `mise activate` to zsh. Tools resolve through the mise shims that `env.sh` puts on PATH.
+- Don't add `mise activate` to zsh or bash. Tools resolve through the mise shims that `env.sh` puts on PATH.
 - Don't source `oh-my-zsh.sh`. `interactive.zsh` loads the oh-my-zsh lib files and the plugins in `plugins=(...)` directly. To add a plugin, clone it into `~/.oh-my-zsh/custom/plugins/`, add it to `plugins`, and record it in `shell-repositories.json`.
 - Add completion directories to the `fpath=(...)` line before `compinit`. A directory added after `compinit` never loads. The completion dump in `~/.cache/zsh` rebuilds when `fpath` changes or the dump is a day old.
 - Keep `env.sh` free of subprocesses such as `launchctl`, `brew --prefix` or `$(...)`, because it runs for every shell and every bash script. Source `env.sh` at most once per startup file.
@@ -62,4 +83,4 @@ hyperfine -N -w 3 'zsh -il -c exit'                        # startup time, ~45 m
 
 For prompt, terminal or editor configs, check them with `starship prompt`, `ghostty +validate-config`, `tmux source-file ~/.tmux.conf` or `vim -Nu ~/.vimrc -es -c 'qa!'`.
 
-`./bootstrap.sh` reapplies the home pointers, the config links, the git hook, the LaunchAgent and the GUI environment. It overwrites what it replaces and keeps no backup copies. Running it again changes nothing. `./bootstrap.sh --install` first installs everything in the manifests.
+`./bootstrap.sh` reapplies the home pointers, the config links, the git hook and the LaunchAgents. It overwrites what it replaces and keeps no backup copies. Running it again changes nothing. `./bootstrap.sh --install` first installs everything in the manifests and the `installers` table. It needs only Homebrew; `bootstrap.sh` installs uv itself.

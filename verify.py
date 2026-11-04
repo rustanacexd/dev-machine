@@ -94,5 +94,10 @@ docker_ok = context.returncode == 0 and context.stdout.strip() == 'orbstack'
 if args.expect_managed and not docker_ok:
     failed.append('Docker context')
 print(json.dumps({'docker_context': context.stdout.strip(), 'managed': docker_ok}))
+
+java_home_ok = (Path(home) / '.local/share/mise/installs/java/global/bin/java').exists()
+if args.expect_managed and not java_home_ok:
+    failed.append('JAVA_HOME link')
+print(json.dumps({'java_home': java_home_ok}))
 if failed:
     raise SystemExit('Unexpected command ownership: ' + ', '.join(failed))
