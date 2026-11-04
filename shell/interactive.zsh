@@ -115,11 +115,6 @@ fi
 unfunction _cached_init
 
 # 5) Aliases
-# Navigation shortcuts.
-alias work="cd ~/code"
-alias notes='cd ~/code/notes'
-alias todo='notes && nvim go2/todo.md'
-
 # Basic shell convenience aliases.
 alias pg="ping google.com"
 alias c='clear'
