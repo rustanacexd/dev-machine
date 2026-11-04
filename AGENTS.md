@@ -15,9 +15,20 @@ The files in the home directory are one-line pointers. Edit the files they load 
 
 - `shell/env.sh` builds PATH and the shared environment. It also runs for every non-interactive bash script through `BASH_ENV`.
 - `shell/interactive.zsh` holds the completion setup, the oh-my-zsh libraries and plugins, the tool hooks, and the aliases.
-- `mise.toml`, `uv.toml`, `python-version` and `npmrc` are linked into their tools' normal config locations by `bootstrap.py`.
+- `bootstrap.py` links these files into their tools' normal locations. Edit the copy here; the live path is a symlink.
+
+  | File | Live path |
+  | --- | --- |
+  | `mise.toml` | `~/.config/mise/config.toml` |
+  | `uv.toml`, `python-version` | `~/.config/uv/` |
+  | `npmrc` | `~/.npmrc` |
+  | `starship.toml` | `~/.config/starship.toml` |
+  | `ghostty.config` | `~/.config/ghostty/config` |
+  | `tmux.conf` | `~/.tmux.conf` |
+  | `vimrc` | `~/.vimrc` |
+
+  To track another config, add it to the `links` table in `bootstrap.py` and run `./bootstrap.sh`.
 - `launchd/com.dev-machine.gui-env.plist` sets `EXA_API_KEY` for GUI apps at login.
-- The starship prompt config is not here. `~/.config/starship.toml` links to `~/code/dotfiles/starship.toml`, a separate repository.
 - The manifests (`Brewfile`, `python-tools.json`, `constraints/`, `npm-packages.json`, `go-tools.json`, `python-libraries.txt`, `local-python-projects.json`, `shell-repositories.json`) feed `bootstrap.sh --install`.
 
 ## Secrets
@@ -27,7 +38,7 @@ Never commit a secret, and never print one in output.
 - `private/env.sh` holds `EXA_API_KEY`. It is git-ignored and has mode 600.
 - `~/.zshrc.secrets` holds the AWS and Gemini keys. It is outside the repository, and `interactive.zsh` sources it.
 
-Put any new credential in one of those two files. Keep `.gitignore` covering them.
+Put any new credential in one of those two files. Keep `.gitignore` covering them. The `.githooks/pre-commit` hook runs `trufflehog` on the staged files and blocks a commit that looks like it contains a credential. `bootstrap.py` turns the hook on with `core.hooksPath`. Don't bypass it with `--no-verify`.
 
 ## Startup speed rules
 
@@ -49,4 +60,6 @@ zsh -il -c 'print ok'                                      # loads without error
 hyperfine -N -w 3 'zsh -il -c exit'                        # startup time, ~45 ms
 ```
 
-`./bootstrap.sh` reapplies the home pointers, the config links, the LaunchAgent and the GUI environment. Running it again changes nothing. `./bootstrap.sh --install` first installs everything in the manifests.
+For prompt, terminal or editor configs, check them with `starship prompt`, `ghostty +validate-config`, `tmux source-file ~/.tmux.conf` or `vim -Nu ~/.vimrc -es -c 'qa!'`.
+
+`./bootstrap.sh` reapplies the home pointers, the config links, the git hook, the LaunchAgent and the GUI environment. It overwrites what it replaces and keeps no backup copies. Running it again changes nothing. `./bootstrap.sh --install` first installs everything in the manifests.

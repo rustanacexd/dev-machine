@@ -1,9 +1,7 @@
 import argparse
-import datetime
 import json
 import os
 from pathlib import Path
-import shutil
 import subprocess
 
 parser = argparse.ArgumentParser(description='Restore the development-machine configuration.')
@@ -60,8 +58,6 @@ if args.install:
         subprocess.run(['/opt/homebrew/bin/mise', 'exec', '--', 'go', 'install', package],
                        cwd=root, env={**os.environ, 'GOBIN': str(home / 'go/bin')}, check=True)
 
-stamp = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
-backup = home / '.local/state/dev-machine/backups' / ('configure-' + stamp)
 stubs = {
     '.zshenv': '. "$HOME/.config/dev-machine/shell/env.sh"\n',
     '.zprofile': '. "$HOME/.config/dev-machine/shell/login.zsh"\n',
@@ -77,8 +73,13 @@ links = {
     '.config/uv/uv.toml': root / 'uv.toml',
     '.config/uv/.python-version': root / 'python-version',
     '.npmrc': root / 'npmrc',
+    '.vimrc': root / 'vimrc',
+    '.tmux.conf': root / 'tmux.conf',
+    '.config/ghostty/config': root / 'ghostty.config',
+    '.config/starship.toml': root / 'starship.toml',
     'Library/Java/JavaVirtualMachines/dev-machine.jdk': home / '.local/share/mise/installs/java/global',
 }
+subprocess.run(['git', '-C', str(root), 'config', 'core.hooksPath', '.githooks'], check=True)
 changes = []
 for relative in [*stubs, *links]:
     target = home / relative
@@ -92,10 +93,6 @@ for relative in [*stubs, *links]:
             continue
         if target.is_dir() and not target.is_symlink():
             raise SystemExit('Refusing to replace directory: ' + str(target))
-    if target.exists() or target.is_symlink():
-        saved = backup / relative
-        saved.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-        shutil.copy2(target, saved, follow_symlinks=False)
     target.parent.mkdir(parents=True, exist_ok=True)
     temporary = target.with_name(target.name + '.dev-machine-tmp')
     if temporary.is_symlink() or temporary.exists():
@@ -114,15 +111,12 @@ for relative in [*stubs, *links]:
 environment = {'HOME': str(home), 'PATH': '/usr/bin:/bin:/usr/sbin:/sbin'}
 shell = '. "$HOME/.config/dev-machine/shell/env.sh"; printf "%s\\n" "$PATH" "$JAVA_HOME" "$BASH_ENV"'
 values = subprocess.check_output(['/bin/sh', '-c', shell], env=environment, text=True).splitlines()
-gui_changes = {}
+gui_updated = []
 for name, value in zip(['PATH', 'JAVA_HOME', 'BASH_ENV'], values, strict=True):
     old = subprocess.run(['launchctl', 'getenv', name], capture_output=True, text=True)
     previous = old.stdout.rstrip('\n') if old.returncode == 0 else None
     if previous == value:
         continue
-    gui_changes[name] = previous
-    backup.mkdir(parents=True, exist_ok=True, mode=0o700)
-    (backup / 'gui-environment.json').write_text(json.dumps(gui_changes, indent=2) + '\n')
+    gui_updated.append(name)
     subprocess.run(['launchctl', 'setenv', name, value], check=True)
-print(json.dumps({'configured': changes, 'gui_updated': list(gui_changes),
-                  'backups': str(backup) if backup.exists() else None}, indent=2))
+print(json.dumps({'configured': changes, 'gui_updated': gui_updated}, indent=2))

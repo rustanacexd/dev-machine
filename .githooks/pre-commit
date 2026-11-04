@@ -1,0 +1,12 @@
+#!/bin/sh
+# Blocks a commit whose staged files contain something that looks like a credential.
+set -eu
+command -v trufflehog >/dev/null 2>&1 || { echo "pre-commit: trufflehog is not installed; run brew install trufflehog" >&2; exit 1; }
+staged=$(mktemp -d)
+trap 'rm -rf "$staged"' EXIT
+git diff --cached --name-only --diff-filter=ACM -z | xargs -0 git checkout-index --prefix="$staged/" --
+if ! trufflehog filesystem "$staged" --no-verification --no-update --fail >/dev/null 2>&1; then
+    trufflehog filesystem "$staged" --no-verification --no-update 2>/dev/null | sed "s#$staged/##" >&2
+    echo "pre-commit: possible secret in the staged files. Move it to private/env.sh or ~/.zshrc.secrets." >&2
+    exit 1
+fi

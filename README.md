@@ -1,6 +1,6 @@
 # Development machine configuration
 
-This repository holds the shell setup and tool manifests for this Mac. Python is managed by uv, Node, Bun, Go and Java by mise, Rust by rustup, and general utilities by Homebrew. OrbStack provides Docker. Agents should read `AGENTS.md` first.
+This repository holds the shell, prompt, terminal and editor configs and the tool manifests for this Mac. Python is managed by uv, Node, Bun, Go and Java by mise, Rust by rustup, and general utilities by Homebrew. OrbStack provides Docker. Agents should read `AGENTS.md` first.
 
 | Command | Machine default |
 | --- | --- |
@@ -19,7 +19,7 @@ The default `python`, `python3` and `pip` use the shared environment at `~/.venv
 ## Use
 
 ```sh
-./bootstrap.sh             # reapply the shell pointers, config links and GUI environment
+./bootstrap.sh             # reapply the shell pointers, config links, git hook and GUI environment
 ./bootstrap.sh --install   # install the recorded packages first
 python3 verify.py --expect-managed
 ```
