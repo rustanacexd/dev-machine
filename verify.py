@@ -88,12 +88,16 @@ for name in python_tools['tools']:
         failed.append('Python tool ' + name)
     print(json.dumps({'python_tool': name, 'managed': managed}))
 
-context = subprocess.run([home + '/.orbstack/bin/docker', 'context', 'show'],
-                         capture_output=True, text=True, timeout=15)
-docker_ok = context.returncode == 0 and context.stdout.strip() == 'orbstack'
+orbstack_docker = Path(home) / '.orbstack/bin/docker'
+if orbstack_docker.exists():
+    context = subprocess.run([str(orbstack_docker), 'context', 'show'],
+                             capture_output=True, text=True, timeout=15).stdout.strip()
+else:
+    context = 'missing; open OrbStack once to create ~/.orbstack/bin'
+docker_ok = context == 'orbstack'
 if args.expect_managed and not docker_ok:
     failed.append('Docker context')
-print(json.dumps({'docker_context': context.stdout.strip(), 'managed': docker_ok}))
+print(json.dumps({'docker_context': context, 'managed': docker_ok}))
 
 java_home_ok = (Path(home) / '.local/share/mise/installs/java/global/bin/java').exists()
 if args.expect_managed and not java_home_ok:

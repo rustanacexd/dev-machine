@@ -37,7 +37,8 @@ The setup assumes Apple Silicon, with Homebrew in `/opt/homebrew`.
 4. Recreate the two secret files, which are not in Git:
    - `~/.config/dev-machine/private/env.sh`, mode 600, exporting `EXA_API_KEY`.
    - `~/.zshrc.secrets`, exporting `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `GEMINI_API_KEY` and `GOOGLE_GENERATIVE_AI_API_KEY`.
-5. Log out and back in, so GUI apps get the PATH and secrets, then check:
+5. Open OrbStack once and finish its setup. That creates `~/.orbstack/bin`, which makes `docker` use OrbStack.
+6. Log out and back in, so GUI apps get the PATH and secrets, then check:
 
    ```sh
    python3 ~/.config/dev-machine/verify.py --expect-managed
