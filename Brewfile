@@ -164,8 +164,6 @@ cask "font-symbols-only-nerd-font"
 cask "gcloud-cli"
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask "ghostty"
-# CLI for GitKraken
-cask "gitkraken-cli"
 # Keyboard customiser
 cask "karabiner-elements"
 # Htop on steroids
