@@ -68,10 +68,21 @@ unset _omz_file
 [[ -z "$LS_COLORS" ]] || zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 
 # 4) Tool Init
+# Sources a tool's generated init script from a cache keyed by the resolved
+# binary path, so an upgrade (a new Cellar path) regenerates it.
+_cached_init() {
+  local cache="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/init-$1-${${commands[$1]:A}//\//%}.zsh"
+  if [[ ! -s "$cache" ]]; then
+    rm -f "${cache:h}/init-$1-"*(N)
+    "$@" >| "$cache" || { rm -f "$cache"; return 1 }
+  fi
+  source "$cache"
+}
+
 # Load fzf key bindings/completions only for full interactive sessions
 # (avoids zle warnings when running `zsh -i -c ...`).
 if [[ -o interactive && -z "$ZSH_EXECUTION_STRING" ]] && (( $+commands[fzf] )); then
-  eval "$(fzf --zsh)"
+  _cached_init fzf --zsh
 fi
 
 # Default file source for fzf if not already set by other configs.
@@ -95,12 +106,13 @@ fi
 # starship: prompt renderer
 # direnv: auto-loads .envrc per directory
 if [[ "$TERM" != dumb ]] && (( $+commands[starship] )); then
-  eval "$(starship init zsh)"
+  _cached_init starship init zsh
 fi
 
 if (( $+commands[direnv] )); then
-  eval "$(direnv hook zsh)"
+  _cached_init direnv hook zsh
 fi
+unfunction _cached_init
 
 # 5) Aliases
 # Navigation shortcuts.
