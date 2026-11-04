@@ -32,14 +32,40 @@ export FORCE_AUTOUPDATE_PLUGINS=true
 export EDITOR="zed --wait"
 export VISUAL="zed --wait"
 
-# 3) oh-my-zsh + plugins
+# 3) Completion + oh-my-zsh libraries and plugins
+# Loaded directly instead of through oh-my-zsh.sh, which spent ~40 ms on
+# update checks, compaudit, and zcompdump bookkeeping. shell-repositories.json
+# pins the oh-my-zsh revision, so its updater has nothing to do.
 # Plugin list:
 # - fzf-tab: fuzzy tab completion UI
 # - zsh-bat: nicer cat-like previews through bat integration
+ZSH_CUSTOM="$ZSH/custom"
+ZSH_CACHE_DIR="$ZSH/cache"
 plugins=(fzf-tab zsh-bat)
-if [[ -r "$ZSH/oh-my-zsh.sh" ]]; then
-    source "$ZSH/oh-my-zsh.sh"
+fpath=("$ZSH_CUSTOM"/plugins/${^${(Oa)plugins}} "$ZSH"/{functions,completions} "$ZSH_CUSTOM"/{functions,completions}
+       "$ZSH_CACHE_DIR/completions" "$HOME/.local/share/zsh/site-functions" $fpath)
+
+# compinit -C skips the per-startup fpath scan. Rebuild the dump daily, or
+# when fpath changes, so newly installed completions still appear.
+ZSH_COMPDUMP="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump-$ZSH_VERSION"
+autoload -Uz compinit
+_zcompdump_fresh=("$ZSH_COMPDUMP"(N.mh-24))
+if (( $#_zcompdump_fresh )) && [[ -r "$ZSH_COMPDUMP.fpath" && "$(<"$ZSH_COMPDUMP.fpath")" == "$fpath" ]]; then
+  compinit -C -d "$ZSH_COMPDUMP"
+else
+  mkdir -p "${ZSH_COMPDUMP:h}"
+  rm -f "$ZSH_COMPDUMP"
+  compinit -i -d "$ZSH_COMPDUMP"
+  print -r -- "$fpath" >| "$ZSH_COMPDUMP.fpath"
+  zcompile "$ZSH_COMPDUMP"
 fi
+unset _zcompdump_fresh
+
+for _omz_file in "$ZSH"/lib/*.zsh; do source "$_omz_file"; done
+for _omz_file in $plugins; do source "$ZSH_CUSTOM/plugins/$_omz_file/$_omz_file.plugin.zsh"; done
+for _omz_file in "$ZSH_CUSTOM"/*.zsh(N); do source "$_omz_file"; done
+unset _omz_file
+[[ -z "$LS_COLORS" ]] || zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 
 # 4) Tool Init
 # Load fzf key bindings/completions only for full interactive sessions
@@ -111,6 +137,3 @@ alias export_gcs_creds='export GOOGLE_APPLICATION_CREDENTIALS="/Users/rustancorp
 # that env only when working on browser-use.
 
 
-
-# sentry
-fpath=("/Users/rustancorpuz/.local/share/zsh/site-functions" $fpath)
