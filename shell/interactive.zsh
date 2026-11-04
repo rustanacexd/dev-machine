@@ -32,8 +32,6 @@ export FORCE_AUTOUPDATE_PLUGINS=true
 export EDITOR="zed --wait"
 export VISUAL="zed --wait"
 
-. "$HOME/.config/dev-machine/shell/env.sh"
-
 # 3) oh-my-zsh + plugins
 # Plugin list:
 # - fzf-tab: fuzzy tab completion UI

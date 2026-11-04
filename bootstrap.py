@@ -69,6 +69,8 @@ stubs = {
     '.profile': '. "$HOME/.config/dev-machine/shell/env.sh"\n',
     '.bashrc': '. "$HOME/.config/dev-machine/shell/interactive.bash"\n',
     '.bash_profile': '. "$HOME/.profile"\ncase $- in\n    *i*) . "$HOME/.bashrc" ;;\nesac\n',
+    'Library/LaunchAgents/com.dev-machine.gui-env.plist':
+        (root / 'launchd/com.dev-machine.gui-env.plist').read_text(),
 }
 links = {
     '.config/mise/config.toml': root / 'mise.toml',
@@ -104,6 +106,10 @@ for relative in [*stubs, *links]:
         temporary.symlink_to(desired)
     temporary.replace(target)
     changes.append(relative)
+    if relative.startswith('Library/LaunchAgents/'):
+        domain = 'gui/' + str(os.getuid())
+        subprocess.run(['launchctl', 'bootout', domain, str(target)], capture_output=True)
+        subprocess.run(['launchctl', 'bootstrap', domain, str(target)], check=True)
 
 environment = {'HOME': str(home), 'PATH': '/usr/bin:/bin:/usr/sbin:/sbin'}
 shell = '. "$HOME/.config/dev-machine/shell/env.sh"; printf "%s\\n" "$PATH" "$JAVA_HOME" "$BASH_ENV"'
