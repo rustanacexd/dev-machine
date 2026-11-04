@@ -116,11 +116,3 @@ alias export_gcs_creds='export GOOGLE_APPLICATION_CREDENTIALS="/Users/rustancorp
 
 # sentry
 fpath=("/Users/rustancorpuz/.local/share/zsh/site-functions" $fpath)
-
-
-
-
-
-if (( $+commands[mise] )); then
-    eval "$(mise activate zsh)"
-fi
